@@ -1,0 +1,24 @@
+#: import ListAdapter kivy.adapters.listadapter.ListAdapter
+#: import ListItemButton kivy.uix.listview.ListItemButton
+
+TTSRootWidget:
+
+<TTSRootWidget>:
+    orientation: "vertical"
+    SpeechCreateWidget:
+    PlaySpeechWidget:
+
+<SpeechCreateWidget>:
+    create_text_to_speech_text: ctts_text
+    create_text_to_speech_filename: ctts_file
+    orientation: "vertical"
+    BoxLayout:
+        TextInput:
+            id: ctts_text
+        TextInput:
+            id: ctts_file
+    Button:
+        text: "create a speech."
+        font_size: "30sp"
+        #on_press: root.check_text_input_property(args)
+        on_press: root.create_text_to_speech_mp3_file(args)
