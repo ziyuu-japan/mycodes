@@ -6,19 +6,31 @@ TTSRootWidget:
 <TTSRootWidget>:
     orientation: "vertical"
     SpeechCreateWidget:
+        size_hint_y: .5
     PlaySpeechWidget:
+        size_hint_y: .5
 
 <SpeechCreateWidget>:
     create_text_to_speech_text: ctts_text
     create_text_to_speech_filename: ctts_file
     orientation: "vertical"
     BoxLayout:
+        size_hint_y: .8
+        orientation: "vertical"
+        Label:
+            size_hint_y: .1
+            text: "Enter text you want to get speeched"
         TextInput:
+            size_hint_y: .9
             id: ctts_text
+    BoxLayout:
+        size_hint_y: .1
+        orientation: "horizontal"
+        Label:
+            text: "Enter file name"
         TextInput:
             id: ctts_file
     Button:
-        text: "create a speech."
-        font_size: "30sp"
-        #on_press: root.check_text_input_property(args)
+        size_hint_y: .1
+        text: "create a speech"
         on_press: root.create_text_to_speech_mp3_file(args)

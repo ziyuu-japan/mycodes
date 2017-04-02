@@ -12,27 +12,40 @@ import os
 from os.path import sep, expanduser, isdir, dirname
 from kivy.garden.filebrowser import FileBrowser
 
+class FileSelectPlusPlayWidget(BoxLayout):
+    def __init__(self, **kwargs):
+        super(FileSelectPlusPlayWidget, self).__init__(**kwargs)
+        self.orientation = "vertical"
+        self.file_select_button = Button(text="Select mp3 file")
+        self.filename_label = Label(text="File Name")
+        upper_boxlayout = BoxLayout()
+        upper_boxlayout.add_widget(self.filename_label)
+        upper_boxlayout.add_widget(self.file_select_button)
+        self.speech_button = Button(text="Speech")
+
+        self.add_widget(upper_boxlayout)
+        self.add_widget(self.speech_button)
+
+    def bind_file_select_button_to(self, callback):
+        self.file_select_button.bind(on_press=callback)
+        print(self, callback)
+
+    def bind_speech_button_to(self, callback):
+        self.speech_button.bind(on_press=callback)
+
+    def change_filename_label_text(self, text):
+        self.filename_label.text= text
+
 class PlaySpeechWidget(BoxLayout):
 
     def __init__(self, **kwargs):
         super(PlaySpeechWidget, self).__init__(**kwargs)
-        self.orientation = 'vertical'
-        self.widgets_list = []
-        self.filepath= ""
+        self.speechfile_name = ""
 
-        boxlayout= BoxLayout()
-        self.filename_label = Label(text='File Name')
-        self.findfile_button = Button(text='Find mp3 file')
-        self.findfile_button.bind(on_press=self.switch_to_filebrowser)
-        boxlayout.add_widget(self.filename_label)
-        boxlayout.add_widget(self.findfile_button)
-        self.widgets_list.append(boxlayout)
-        self.add_widget(boxlayout)
-
-        speech_button = Button(text='Speech')
-        speech_button.bind(on_press=self.speech)
-        self.widgets_list.append(speech_button)
-        self.add_widget(speech_button)
+        self.select_plus_speech_layout = FileSelectPlusPlayWidget()
+        self.select_plus_speech_layout.bind_file_select_button_to(self.switch_to_filebrowser)
+        self.select_plus_speech_layout.bind_speech_button_to(self.speech)
+        self.add_widget(self.select_plus_speech_layout)
 
         self.filebrowser_widget = FileBrowser(select_string='Select',
             favorites=[(os.path.join(os.path.dirname(os.path.abspath(__file__)), 'speeches'), 'speeches')])
@@ -45,26 +58,29 @@ class PlaySpeechWidget(BoxLayout):
         self.add_widget(self.filebrowser_widget)
 
     def _fbrowser_canceled(self, instance):
-        print 'cancelled, Close self.'
         self.clear_widgets()
-        for widget in self.widgets_list:
-            self.add_widget(widget)
-
+        self.add_widget(self.select_plus_speech_layout)
 
     def _fbrowser_success(self, instance):
-        self.filepath = instance.selection[0]
-        self.filename_label.text = self.filepath
+        # instance.selection[0] has a abs path of a file user selected.
+        # and then get only the filename
+        self.speechfile_name = self.get_filename_from_absfilepath(instance.selection[0])
+        # change filename_label text to the selected filename
+        self.select_plus_speech_layout.change_filename_label_text(self.speechfile_name)
+
         self.clear_widgets()
-        for widget in self.widgets_list:
-            self.add_widget(widget)
-        print instance.selection
+        self.add_widget(self.select_plus_speech_layout)
 
     def speech(self, instance):
-        sound = SoundLoader.load('{}'.format(self.filepath))
+        sound = SoundLoader.load('speeches/{}'.format(self.speechfile_name))
         if sound:
             print("Sound found at %s" % sound.source)
             print("Sound is %.3f seconds" % sound.length)
             sound.play()
+
+    def get_filename_from_absfilepath(self, absfilepath):
+        abs_parentdirpath, filename = os.path.split(absfilepath)
+        return filename
 
 
 
@@ -72,17 +88,6 @@ class SpeechCreateWidget(BoxLayout):
 
     create_text_to_speech_text = ObjectProperty()
     create_text_to_speech_filename = ObjectProperty()
-
-    def check_text_input_property(self, instance):
-        #print(instance)
-        print(self.text_input_property.text)
-        tts = gTTS(text="{title}".format(title=self.text_input_property.text), lang='en')
-        tts.save("test.mp3")
-        sound = SoundLoader.load('test.mp3')
-        if sound:
-            print("Sound found at %s" % sound.source)
-            print("Sound is %.3f seconds" % sound.length)
-            sound.play()
 
     def create_text_to_speech_mp3_file(self, instance):
         if len(self.create_text_to_speech_text.text) <= 0 or len(self.create_text_to_speech_filename.text) <= 0:
