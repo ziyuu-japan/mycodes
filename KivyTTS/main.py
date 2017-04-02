@@ -103,8 +103,8 @@ class SpeechCreateWidget(BoxLayout):
 class TTSRootWidget(BoxLayout):
     pass
 
-class Main1App(App):
+class MainApp(App):
     pass
 
 if __name__ == '__main__':
-    Main1App().run()
+    MainApp().run()
